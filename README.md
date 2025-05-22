@@ -7,7 +7,7 @@
 
 A powerful terminal-based AI agent that leverages OpenRouter's API to interact with various AI models. This tool provides a simple yet effective way to chat with AI models directly from your terminal.
 
-![Terminal AI Agent Demo](img/image1.png)
+![Terminal AI Agent Demo](https://raw.githubusercontent.com/nudelx/terminal-ai/refs/heads/main/img/img1.png)
 
 ## ✨ Features
 

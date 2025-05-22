@@ -12,6 +12,12 @@ const models = {
     description: "Mistral AI's 7B parameter model",
     maxTokens: 4096,
   },
+  "deepseek-r1": {
+    id: "deepseek/deepseek-r1:free",
+    name: "DeepSeek R1",
+    description: "DeepSeek's R1 model",
+    maxTokens: 4096,
+  },
   // Add more models as needed
 };
 

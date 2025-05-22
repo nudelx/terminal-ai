@@ -109,6 +109,6 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 
 ## 📫 Contact
 
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter)
+Your Name - [@_nudelx_](https://x.com/_nudelx_)
 
-Project Link: [https://github.com/yourusername/tai](https://github.com/yourusername/tai)
+Project Link: [https://github.com/nudelx/terminal-ai](https://github.com/nudelx/terminal-ai)

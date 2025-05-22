@@ -17,8 +17,8 @@ A powerful terminal-based AI agent that leverages OpenRouter's API to interact w
 
 ## 📋 Prerequisites
 
-- Node.js (v14 or higher)
-- npm (v6 or higher)
+- Node.js (v22 or higher)
+- npm (v10 or higher)
 - OpenRouter API key
 
 ## 🚀 Installation

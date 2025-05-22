@@ -1,7 +1,6 @@
 # 🤖 Terminal AI Agent
 
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
-[![Node.js CI](https://github.com/yourusername/tai/actions/workflows/node.js.yml/badge.svg)](https://github.com/yourusername/tai/actions/workflows/node.js.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/nudelx/terminal-ai)
 

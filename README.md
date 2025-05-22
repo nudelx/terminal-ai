@@ -1,11 +1,13 @@
 # 🤖 Terminal AI Agent
 
 [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
-![Node.js](https://img.shields.io/badge/node-%3E%3D22-brightgreen)
+[![Node.js CI](https://github.com/yourusername/tai/actions/workflows/node.js.yml/badge.svg)](https://github.com/yourusername/tai/actions/workflows/node.js.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/nudelx/terminal-ai)
 
 A powerful terminal-based AI agent that leverages OpenRouter's API to interact with various AI models. This tool provides a simple yet effective way to chat with AI models directly from your terminal.
+
+![Terminal AI Agent Demo](img/image1.png)
 
 ## ✨ Features
 

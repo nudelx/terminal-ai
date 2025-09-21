@@ -27,4 +27,4 @@ build/
 ./history.json
 ./config.json
 
-history
+history.json

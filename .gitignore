@@ -23,3 +23,6 @@ logs
 # Build output
 dist/
 build/ 
+
+./history.json
+./config.json

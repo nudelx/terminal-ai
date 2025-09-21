@@ -1,5 +1,10 @@
 const models = {
-  // Free models
+  "x-ai/grok-4-fast": {
+    id: "x-ai/grok-4-fast:free",
+    name: "Grok 4 Fast",
+    description: "Grok 4 Fast model",
+    maxTokens: 2048,
+  },
   "gemma-3n": {
     id: "google/gemma-3n-e4b-it:free",
     name: "Gemma 3N",
@@ -18,18 +23,12 @@ const models = {
     description: "DeepSeek's R1 model",
     maxTokens: 4096,
   },
-  // Add more models as needed
 };
 
-const defaultModel = "gemma-3n";
+const defaultModel = "x-ai/grok-4-fast";
 
-module.exports = {
-  models,
-  defaultModel,
-  getModelById: (modelId) => {
-    return (
-      Object.values(models).find((model) => model.id === modelId) ||
-      models[defaultModel]
-    );
-  },
+const getModelByKey = (key) => {
+  return models[key] || models[defaultModel];
 };
+
+export { models, defaultModel, getModelByKey };

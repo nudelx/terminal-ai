@@ -1,34 +1,32 @@
 const models = {
-  "x-ai/grok-4-fast": {
-    id: "x-ai/grok-4-fast:free",
-    name: "Grok 4 Fast",
-    description: "Grok 4 Fast model",
-    maxTokens: 2048,
-  },
-  "gemma-3n": {
-    id: "google/gemma-3n-e4b-it:free",
-    name: "Gemma 3N",
-    description: "Google's lightweight Gemma model",
-    maxTokens: 2048,
-  },
-  "mistral-7b": {
-    id: "mistralai/mistral-7b-instruct:free",
-    name: "Mistral 7B",
-    description: "Mistral AI's 7B parameter model",
+  "mimo-v2-flash": {
+    id: "xiaomi/mimo-v2-flash:free",
+    name: "Mimo V2 Flash",
+    description: "Xiaomi's Mimo V2 Flash model",
     maxTokens: 4096,
   },
-  "deepseek-r1": {
-    id: "deepseek/deepseek-r1:free",
-    name: "DeepSeek R1",
-    description: "DeepSeek's R1 model",
-    maxTokens: 4096,
+  "gemini-2.0-flash": {
+    id: "google/gemini-2.0-flash-exp:free",
+    name: "Gemini 2.0 Flash",
+    description: "Google's Gemini 2.0 Flash experimental",
+    maxTokens: 8192,
+  },
+  "llama-3.3-70b": {
+    id: "meta-llama/llama-3.3-70b-instruct:free",
+    name: "Llama 3.3 70B",
+    description: "Meta's Llama 3.3 70B Instruct",
+    maxTokens: 8192,
+  },
+  "qwen-2.5-72b": {
+    id: "qwen/qwen-2.5-72b-instruct:free",
+    name: "Qwen 2.5 72B",
+    description: "Alibaba's Qwen 2.5 72B Instruct",
+    maxTokens: 8192,
   },
 };
 
-const defaultModel = "x-ai/grok-4-fast";
+const defaultModel = "mimo-v2-flash";
 
-const getModelByKey = (key) => {
-  return models[key] || models[defaultModel];
-};
+const getModelByKey = (key) => models[key] || models[defaultModel];
 
 export { models, defaultModel, getModelByKey };

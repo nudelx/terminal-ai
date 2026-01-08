@@ -1,16 +1,10 @@
-import axios from "axios";
+import {OpenRouter} from "@openrouter/sdk";
 import chalk from "chalk";
-import { MESSAGES, API } from "../config/constants.js";
+import { MESSAGES } from "../config/constants.js";
 import { getModelByKey } from "../config/models.js";
 
-export const createAIClient = (apiKey) => ({
-  apiKey,
-  baseURL: API.BASE_URL,
-  headers: {
-    ...API.HEADERS,
-    Authorization: `Bearer ${apiKey}`,
-  },
-});
+export const createAIClient = (apiKey) =>
+  new OpenRouter({ apiKey });
 
 export const sendMessage = async (client, history, modelId) => {
   try {
@@ -20,38 +14,38 @@ export const sendMessage = async (client, history, modelId) => {
       throw new Error(`${MESSAGES.ERROR_INVALID_MODEL}: ${modelId}`);
     }
 
-    const response = await axios.post(
-      client.baseURL,
-      {
-        model: model.id,
-        messages: history,
-        max_tokens: model.maxTokens,
-      },
-      {
-        headers: client.headers,
-        timeout: 30000,
-      }
-    );
+    const response = await client.chat.send({
+      model: model.id,
+      messages: history,
+      max_tokens: model.maxTokens,
+    });
 
-    if (!response.data?.choices?.[0]?.message?.content) {
+    const content = response.choices?.[0]?.message?.content;
+
+    if (!content) {
       throw new Error("Invalid response format from AI service");
     }
 
-    return response.data.choices[0].message.content;
+    return content;
   } catch (error) {
-    if (error.code === "ECONNABORTED") {
+    const status = error.status || error.response?.status;
+
+    const errorHandlers = {
+      401: () => console.error(chalk.red("Invalid API key. Please check your OPENROUTER_API_KEY.")),
+      404: () => console.error(chalk.red(`Model not found: ${getModelByKey(modelId)?.id}. Check available models at openrouter.ai/models`)),
+      429: () => console.error(chalk.red("Rate limit exceeded. Please wait before trying again.")),
+    };
+
+    const handler = errorHandlers[status];
+    
+    if (handler) {
+      handler();
+    } else if (error.code === "ECONNABORTED") {
       console.error(chalk.red("Request timeout. Please try again."));
-    } else if (error.response?.status === 401) {
-      console.error(
-        chalk.red("Invalid API key. Please check your OPENROUTER_API_KEY.")
-      );
-    } else if (error.response?.status === 429) {
-      console.error(
-        chalk.red("Rate limit exceeded. Please wait before trying again.")
-      );
     } else {
       console.error(chalk.red(MESSAGES.ERROR_OPENROUTER), error.message);
     }
+
     return null;
   }
 };

@@ -18,13 +18,6 @@ const MESSAGES = {
   ERROR_MODEL_SWITCH: "Model switch failed",
 };
 
-const API = {
-  BASE_URL: "https://openrouter.ai/api/v1/chat/completions",
-  HEADERS: {
-    "Content-Type": "application/json",
-  },
-};
-
 const UI = {
   PREFIXES: {
     USER: "🤔",
@@ -41,4 +34,4 @@ const UI = {
   PAGE_SIZE: 10,
 };
 
-export { COMMANDS, MESSAGES, API, UI };
+export { COMMANDS, MESSAGES, UI };

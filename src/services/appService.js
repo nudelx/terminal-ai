@@ -126,9 +126,11 @@ const handleUserMessage = async (message) => {
 
       displayAIResponse(response);
 
-      speakText(response).catch((error) => {
-        console.warn(chalk.yellow(`Audio playback failed: ${error.message}`));
-      });
+      if (appState.configManager.get("speak")) {
+        speakText(response).catch((error) => {
+          console.warn(chalk.yellow(`Audio playback failed: ${error.message}`));
+        });
+      }
     } else {
       displayError("Failed to get AI response. Please try again.");
     }

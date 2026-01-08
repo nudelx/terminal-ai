@@ -5,7 +5,7 @@ A modular, maintainable terminal-based AI assistant using OpenRouter API with te
 ## 🚀 Features
 
 - **Multiple AI Models**: Support for various OpenRouter models including Grok, Gemma, Mistral, and DeepSeek
-- **Text-to-Speech**: Automatic audio playback of AI responses in Russian
+- **Configurable Text-to-Speech**: Automatic audio playback of AI responses with toggle option
 - **Conversation History**: Persistent conversation history with auto-save
 - **Model Switching**: Easy model switching during conversation
 - **Modular Architecture**: Clean, maintainable code structure using functional programming
@@ -75,6 +75,7 @@ The application supports multiple AI models:
 
 - `exit`: Quit the application
 - `model`: Switch to a different AI model
+- `speak`: Toggle text-to-speech on/off
 
 ## 🏗️ Architecture
 

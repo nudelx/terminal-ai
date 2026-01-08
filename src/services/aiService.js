@@ -1,4 +1,4 @@
-import OpenRouter from "@openrouter/sdk";
+import {OpenRouter} from "@openrouter/sdk";
 import chalk from "chalk";
 import { MESSAGES } from "../config/constants.js";
 import { getModelByKey } from "../config/models.js";
@@ -14,7 +14,7 @@ export const sendMessage = async (client, history, modelId) => {
       throw new Error(`${MESSAGES.ERROR_INVALID_MODEL}: ${modelId}`);
     }
 
-    const response = await client.chat.completions.create({
+    const response = await client.chat.send({
       model: model.id,
       messages: history,
       max_tokens: model.maxTokens,

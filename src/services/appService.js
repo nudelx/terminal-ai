@@ -39,19 +39,23 @@ const initializeAppState = (apiKey) => {
   appState.currentModel = null;
 };
 
-const initializeApp = async () => {
+const initializeApp = async (isInteractive = true) => {
   try {
     appState.currentModel = appState.configManager.get("selectedModel");
 
     if (!appState.currentModel || !models[appState.currentModel]) {
-      displayWelcome();
-      appState.currentModel = await selectModel();
+      if (isInteractive) {
+        displayWelcome();
+        appState.currentModel = await selectModel();
 
-      if (appState.currentModel && models[appState.currentModel]) {
-        appState.configManager.set("selectedModel", appState.currentModel);
-        appState.configManager.saveConfig();
+        if (appState.currentModel && models[appState.currentModel]) {
+          appState.configManager.set("selectedModel", appState.currentModel);
+          appState.configManager.saveConfig();
+        } else {
+          throw new Error(MESSAGES.ERROR_NO_MODEL);
+        }
       } else {
-        throw new Error(MESSAGES.ERROR_NO_MODEL);
+        throw new Error("No model selected. Run in interactive mode to configure.");
       }
     }
 
@@ -150,10 +154,23 @@ const cleanupApp = () => {
   }
 };
 
+export const runOneShot = async (apiKey, message) => {
+  try {
+    initializeAppState(apiKey);
+    await initializeApp(false);
+    await handleUserMessage(message);
+  } catch (error) {
+    displayError(`Application error: ${error.message}`);
+    throw error;
+  } finally {
+    cleanupApp();
+  }
+};
+
 export const runApp = async (apiKey) => {
   try {
     initializeAppState(apiKey);
-    await initializeApp();
+    await initializeApp(true);
 
     while (true) {
       const userInput = await getUserInput();

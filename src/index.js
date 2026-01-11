@@ -1,7 +1,7 @@
 import "dotenv/config";
 import chalk from "chalk";
 import { MESSAGES } from "./config/constants.js";
-import { runApp } from "./services/appService.js";
+import { runApp, runOneShot } from "./services/appService.js";
 
 const validateEnvironment = () => {
   const apiKey = process.env.OPENROUTER_API_KEY;
@@ -17,7 +17,14 @@ const validateEnvironment = () => {
 const main = async () => {
   try {
     const apiKey = validateEnvironment();
-    await runApp(apiKey);
+    const args = process.argv.slice(2);
+
+    if (args.length > 0) {
+      const message = args.join(" ");
+      await runOneShot(apiKey, message);
+    } else {
+      await runApp(apiKey);
+    }
   } catch (error) {
     console.error(chalk.red("Application error:"), error.message);
     process.exit(1);

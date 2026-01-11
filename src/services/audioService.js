@@ -1,9 +1,12 @@
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
+import { existsSync, unlinkSync } from "fs";
 import gTTS from "gtts";
 import player from "play-sound";
-import fs from "fs";
-import path from "path";
 import chalk from "chalk";
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const APP_ROOT = join(__dirname, "..", "..");
 const sound = player({});
 
 const cleanTextForTTS = (text) => {
@@ -15,8 +18,8 @@ const cleanTextForTTS = (text) => {
 
 const safeDeleteFile = (filePath) => {
   try {
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+    if (existsSync(filePath)) {
+      unlinkSync(filePath);
     }
   } catch (error) {
     console.warn(
@@ -37,7 +40,7 @@ export const speakText = async (text, language = "en") => {
       }
 
       const gtts = new gTTS(cleanedText, language);
-      const filepath = path.join(process.cwd(), "response.mp3");
+      const filepath = join(APP_ROOT, "response.mp3");
 
       gtts.save(filepath, (err) => {
         if (err) {

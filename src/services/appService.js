@@ -23,7 +23,7 @@ import {
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const APP_ROOT = join(__dirname, "..", "..");
 
-let appState = {
+const appState = {
   apiKey: null,
   aiClient: null,
   configManager: null,

@@ -52,8 +52,24 @@ cp env.example .env
 
 4. Run the application:
 
+You can now run the application using the `tai` executable in the `bin` directory.
+
+## 🎯 Usage
+
+### Interactive Mode
+
+To start the application in interactive mode, run:
+
 ```bash
-npm start
+./bin/tai
+```
+
+### One-shot Mode
+
+To get a single response for a prompt, run:
+
+```bash
+./bin/tai "your question here"
 ```
 
 ## 🔧 Configuration
@@ -137,7 +153,7 @@ The application includes robust error handling for:
 - **History**: Stored in `history.json`
 - **Auto-save**: History automatically saved every 5 seconds
 
-## 🎯 Usage Examples
+## 🎯 Demonstration
 
 ### Basic Conversation
 

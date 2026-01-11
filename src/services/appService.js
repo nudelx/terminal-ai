@@ -1,4 +1,5 @@
-import path from "path";
+import { fileURLToPath } from "url";
+import { dirname, join } from "path";
 import chalk from "chalk";
 import { models, getModelByKey } from "../config/models.js";
 import { MESSAGES } from "../config/constants.js";
@@ -19,6 +20,9 @@ import {
   displayError,
 } from "./uiService.js";
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const APP_ROOT = join(__dirname, "..", "..");
+
 let appState = {
   apiKey: null,
   aiClient: null,
@@ -32,8 +36,8 @@ let appState = {
 const initializeAppState = (apiKey) => {
   appState.apiKey = apiKey;
   appState.aiClient = createAIClient(apiKey);
-  appState.historyPath = path.join(process.cwd(), "history.json");
-  appState.configPath = path.join(process.cwd(), "config.json");
+  appState.historyPath = join(APP_ROOT, "history.json");
+  appState.configPath = join(APP_ROOT, "config.json");
   appState.configManager = createConfigManager(appState.configPath);
   appState.historyManager = createHistoryManager(appState.historyPath);
   appState.currentModel = null;

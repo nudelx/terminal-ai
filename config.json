@@ -1,4 +1,6 @@
 {
-  "selectedModel": "mimo-v2-flash",
+  "selectedModel": "liquid/lfm-2.5-1.2b-instruct:free",
+  "selectedGeminiModel": "gemini-2.0-flash",
+  "apiProvider": "openrouter",
   "speak": false
 }

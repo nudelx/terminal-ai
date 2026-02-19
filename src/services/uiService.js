@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import inquirer from "inquirer";
-import { models, defaultModel, getModelByKey } from "../config/models.js";
+import { getModelsByProvider, getDefaultModel } from "../config/models.js";
 import { MESSAGES, UI, COMMANDS } from "../config/constants.js";
 
 export const displayWelcome = () => {
@@ -32,7 +32,10 @@ export const displayAIResponse = (response) => {
   );
 };
 
-export const selectModel = async () => {
+export const selectModel = async (provider = "openrouter") => {
+  const models = getModelsByProvider(provider);
+  const defaultModel = getDefaultModel(provider);
+
   const modelChoices = Object.entries(models).map(([key, model]) => ({
     name: `${model.name} - ${model.description}`,
     value: key,

@@ -17,6 +17,7 @@
   "type": "module",
   "description": "Terminal AI Agent using OpenRouter",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@openrouter/sdk": "^0.3.11",
     "axios": "^1.6.7",
     "chalk": "^4.1.2",

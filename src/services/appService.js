@@ -1,7 +1,7 @@
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import chalk from "chalk";
-import { models, getModelByKey } from "../config/models.js";
+import { getModelsByProvider, getModelByKey, getDefaultModel } from "../config/models.js";
 import { MESSAGES } from "../config/constants.js";
 import { createAIClient, sendMessage } from "./aiService.js";
 import { speakText } from "./audioService.js";
@@ -31,11 +31,13 @@ const appState = {
   currentModel: null,
   historyPath: null,
   configPath: null,
+  provider: "openrouter",
 };
 
-const initializeAppState = (apiKey) => {
+const initializeAppState = (apiKey, provider = "openrouter") => {
   appState.apiKey = apiKey;
-  appState.aiClient = createAIClient(apiKey);
+  appState.provider = provider;
+  appState.aiClient = createAIClient(apiKey, provider);
   appState.historyPath = join(APP_ROOT, "history.json");
   appState.configPath = join(APP_ROOT, "config.json");
   appState.configManager = createConfigManager(appState.configPath);
@@ -45,25 +47,29 @@ const initializeAppState = (apiKey) => {
 
 const initializeApp = async (isInteractive = true) => {
   try {
-    appState.currentModel = appState.configManager.get("selectedModel");
+    const models = getModelsByProvider(appState.provider);
+    const modelKey = appState.provider === "gemini" ? "selectedGeminiModel" : "selectedModel";
+    appState.currentModel = appState.configManager.get(modelKey);
 
     if (!appState.currentModel || !models[appState.currentModel]) {
       if (isInteractive) {
         displayWelcome();
-        appState.currentModel = await selectModel();
+        console.log(chalk.cyan(`Using ${appState.provider === "gemini" ? "Gemini" : "OpenRouter"} API\n`));
+        appState.currentModel = await selectModel(appState.provider);
 
         if (appState.currentModel && models[appState.currentModel]) {
-          appState.configManager.set("selectedModel", appState.currentModel);
+          appState.configManager.set(modelKey, appState.currentModel);
           appState.configManager.saveConfig();
         } else {
           throw new Error(MESSAGES.ERROR_NO_MODEL);
         }
       } else {
-        throw new Error("No model selected. Run in interactive mode to configure.");
+        // Use default model for non-interactive mode
+        appState.currentModel = getDefaultModel(appState.provider);
       }
     }
 
-    displayModelSelected(getModelByKey(appState.currentModel).name);
+    displayModelSelected(getModelByKey(appState.currentModel, appState.provider).name);
 
     appState.historyManager.startAutoSave();
 
@@ -100,13 +106,15 @@ const setupProcessHandlers = () => {
 
 const handleModelSwitch = async () => {
   try {
-    const newModel = await selectModel();
+    const models = getModelsByProvider(appState.provider);
+    const newModel = await selectModel(appState.provider);
 
     if (newModel && models[newModel]) {
       appState.currentModel = newModel;
-      appState.configManager.set("selectedModel", newModel);
+      const modelKey = appState.provider === "gemini" ? "selectedGeminiModel" : "selectedModel";
+      appState.configManager.set(modelKey, newModel);
       appState.configManager.saveConfig();
-      displayModelSwitched(getModelByKey(newModel).name);
+      displayModelSwitched(getModelByKey(newModel, appState.provider).name);
       return true;
     }
 
@@ -126,7 +134,8 @@ const handleUserMessage = async (message) => {
     const response = await sendMessage(
       appState.aiClient,
       appState.historyManager.getHistory(),
-      appState.currentModel
+      appState.currentModel,
+      appState.provider
     );
 
     if (response) {
@@ -158,9 +167,9 @@ const cleanupApp = () => {
   }
 };
 
-export const runOneShot = async (apiKey, message) => {
+export const runOneShot = async (apiKey, message, provider = "openrouter") => {
   try {
-    initializeAppState(apiKey);
+    initializeAppState(apiKey, provider);
     await initializeApp(false);
     await handleUserMessage(message);
   } catch (error) {
@@ -171,9 +180,9 @@ export const runOneShot = async (apiKey, message) => {
   }
 };
 
-export const runApp = async (apiKey) => {
+export const runApp = async (apiKey, provider = "openrouter") => {
   try {
-    initializeAppState(apiKey);
+    initializeAppState(apiKey, provider);
     await initializeApp(true);
 
     while (true) {

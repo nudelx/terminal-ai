@@ -50,6 +50,12 @@ const openrouterModels = {
 };
 
 const geminiModels = {
+	"gemini-3-flash": {
+		id: "gemini-3-flash-preview",
+		name: "Gemini 3 Flash",
+		description: "High-speed intelligence with PhD-level reasoning at scale.",
+		maxTokens: 8192,
+	},
 	"gemini-2.0-flash": {
 		id: "gemini-2.0-flash",
 		name: "Gemini 2.0 Flash",
@@ -100,5 +106,5 @@ export {
 	defaultGeminiModel,
 	getModelsByProvider,
 	getDefaultModel,
-	getModelByKey
+	getModelByKey,
 };

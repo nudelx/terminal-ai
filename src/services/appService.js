@@ -17,6 +17,10 @@ import {
   getUserInput,
   isExitCommand,
   isModelCommand,
+  isListCommandsCommand,
+  isProviderCommand,
+  isDateUpdateCommand,
+  displayCommands,
   displayError,
 } from "./uiService.js";
 
@@ -125,6 +129,65 @@ const handleModelSwitch = async () => {
   }
 };
 
+const handleDateUpdate = () => {
+  const now = new Date();
+  const options = {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+  };
+  const dateString = now.toLocaleString("en-US", options);
+
+  const dateMessage = `Override: The current date and time is ${dateString}.`;
+
+  appState.historyManager.addMessage("user", dateMessage);
+  console.log(chalk.green(`\nDate updated in conversation: ${dateString}\n`));
+};
+
+const handleProviderSwitch = async () => {
+  const { default: inquirer } = await import("inquirer");
+  const newProvider = appState.provider === "gemini" ? "openrouter" : "gemini";
+  const envKey = newProvider === "gemini" ? "GEMINI_API_KEY" : "OPENROUTER_API_KEY";
+
+  if (!process.env[envKey]) {
+    displayError(`Cannot switch: ${envKey} is not set in .env`);
+    return false;
+  }
+
+  const { confirm } = await inquirer.prompt([
+    {
+      type: "confirm",
+      name: "confirm",
+      message: `Switch to ${newProvider === "gemini" ? "Gemini" : "OpenRouter"}?`,
+      default: true,
+    },
+  ]);
+
+  if (confirm) {
+    appState.provider = newProvider;
+    appState.aiClient = createAIClient(process.env[envKey], newProvider);
+    appState.configManager.set("apiProvider", newProvider);
+
+    const models = getModelsByProvider(newProvider);
+    const modelKey = newProvider === "gemini" ? "selectedGeminiModel" : "selectedModel";
+    appState.currentModel = appState.configManager.get(modelKey) || getDefaultModel(newProvider);
+
+    if (!models[appState.currentModel]) {
+      appState.currentModel = getDefaultModel(newProvider);
+    }
+
+    appState.configManager.saveConfig();
+    console.log(chalk.green(`\nSwitched to ${newProvider === "gemini" ? "Gemini" : "OpenRouter"}`));
+    displayModelSelected(getModelByKey(appState.currentModel, newProvider).name);
+  }
+
+  return confirm;
+};
+
 const handleUserMessage = async (message) => {
   try {
     appState.historyManager.addMessage("user", message);
@@ -195,6 +258,21 @@ export const runApp = async (apiKey, provider = "openrouter") => {
 
       if (isModelCommand(userInput)) {
         await handleModelSwitch();
+        continue;
+      }
+
+      if (isListCommandsCommand(userInput)) {
+        displayCommands();
+        continue;
+      }
+
+      if (isProviderCommand(userInput)) {
+        await handleProviderSwitch();
+        continue;
+      }
+
+      if (isDateUpdateCommand(userInput)) {
+        handleDateUpdate();
         continue;
       }
 

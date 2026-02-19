@@ -43,10 +43,14 @@ const sendGeminiMessage = async (client, history, modelId) => {
   const model = client.getGenerativeModel({ model: modelConfig.id });
 
   // Convert history to Gemini format
-  const geminiHistory = history.slice(0, -1).map((msg) => ({
+  const allHistory = history.slice(0, -1).map((msg) => ({
     role: msg.role === "assistant" ? "model" : "user",
     parts: [{ text: msg.content }],
   }));
+
+  // Gemini requires history to start with a user message
+  const firstUserIndex = allHistory.findIndex((msg) => msg.role === "user");
+  const geminiHistory = firstUserIndex >= 0 ? allHistory.slice(firstUserIndex) : [];
 
   const chat = model.startChat({ history: geminiHistory });
 

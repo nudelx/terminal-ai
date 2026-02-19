@@ -1,6 +1,17 @@
 const COMMANDS = {
   EXIT: "exit",
   MODEL: "model",
+  LIST_COMMANDS: "ls cmd",
+  SWITCH_PROVIDER: "provider",
+  DATE_UPDATE: "date update",
+};
+
+const COMMAND_DESCRIPTIONS = {
+  exit: "Exit the application",
+  model: "Switch AI model",
+  "ls cmd": "List all available commands",
+  provider: "Switch API provider (Gemini/OpenRouter)",
+  "date update": "Inject current date/time into conversation",
 };
 
 const MESSAGES = {
@@ -34,4 +45,4 @@ const UI = {
   PAGE_SIZE: 10,
 };
 
-export { COMMANDS, MESSAGES, UI };
+export { COMMANDS, COMMAND_DESCRIPTIONS, MESSAGES, UI };

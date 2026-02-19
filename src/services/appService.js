@@ -1,7 +1,7 @@
 import { fileURLToPath } from "url";
 import { dirname, join } from "path";
 import chalk from "chalk";
-import { models, getModelByKey } from "../config/models.js";
+import { getModelsByProvider, getModelByKey, getDefaultModel } from "../config/models.js";
 import { MESSAGES } from "../config/constants.js";
 import { createAIClient, sendMessage } from "./aiService.js";
 import { speakText } from "./audioService.js";
@@ -17,6 +17,10 @@ import {
   getUserInput,
   isExitCommand,
   isModelCommand,
+  isListCommandsCommand,
+  isProviderCommand,
+  isDateUpdateCommand,
+  displayCommands,
   displayError,
 } from "./uiService.js";
 
@@ -31,11 +35,13 @@ const appState = {
   currentModel: null,
   historyPath: null,
   configPath: null,
+  provider: "openrouter",
 };
 
-const initializeAppState = (apiKey) => {
+const initializeAppState = (apiKey, provider = "openrouter") => {
   appState.apiKey = apiKey;
-  appState.aiClient = createAIClient(apiKey);
+  appState.provider = provider;
+  appState.aiClient = createAIClient(apiKey, provider);
   appState.historyPath = join(APP_ROOT, "history.json");
   appState.configPath = join(APP_ROOT, "config.json");
   appState.configManager = createConfigManager(appState.configPath);
@@ -45,25 +51,29 @@ const initializeAppState = (apiKey) => {
 
 const initializeApp = async (isInteractive = true) => {
   try {
-    appState.currentModel = appState.configManager.get("selectedModel");
+    const models = getModelsByProvider(appState.provider);
+    const modelKey = appState.provider === "gemini" ? "selectedGeminiModel" : "selectedModel";
+    appState.currentModel = appState.configManager.get(modelKey);
 
     if (!appState.currentModel || !models[appState.currentModel]) {
       if (isInteractive) {
         displayWelcome();
-        appState.currentModel = await selectModel();
+        console.log(chalk.cyan(`Using ${appState.provider === "gemini" ? "Gemini" : "OpenRouter"} API\n`));
+        appState.currentModel = await selectModel(appState.provider);
 
         if (appState.currentModel && models[appState.currentModel]) {
-          appState.configManager.set("selectedModel", appState.currentModel);
+          appState.configManager.set(modelKey, appState.currentModel);
           appState.configManager.saveConfig();
         } else {
           throw new Error(MESSAGES.ERROR_NO_MODEL);
         }
       } else {
-        throw new Error("No model selected. Run in interactive mode to configure.");
+        // Use default model for non-interactive mode
+        appState.currentModel = getDefaultModel(appState.provider);
       }
     }
 
-    displayModelSelected(getModelByKey(appState.currentModel).name);
+    displayModelSelected(getModelByKey(appState.currentModel, appState.provider).name);
 
     appState.historyManager.startAutoSave();
 
@@ -100,13 +110,15 @@ const setupProcessHandlers = () => {
 
 const handleModelSwitch = async () => {
   try {
-    const newModel = await selectModel();
+    const models = getModelsByProvider(appState.provider);
+    const newModel = await selectModel(appState.provider);
 
     if (newModel && models[newModel]) {
       appState.currentModel = newModel;
-      appState.configManager.set("selectedModel", newModel);
+      const modelKey = appState.provider === "gemini" ? "selectedGeminiModel" : "selectedModel";
+      appState.configManager.set(modelKey, newModel);
       appState.configManager.saveConfig();
-      displayModelSwitched(getModelByKey(newModel).name);
+      displayModelSwitched(getModelByKey(newModel, appState.provider).name);
       return true;
     }
 
@@ -115,6 +127,65 @@ const handleModelSwitch = async () => {
     displayError(`${MESSAGES.ERROR_MODEL_SWITCH}: ${error.message}`);
     return false;
   }
+};
+
+const handleDateUpdate = () => {
+  const now = new Date();
+  const options = {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+  };
+  const dateString = now.toLocaleString("en-US", options);
+
+  const dateMessage = `Override: The current date and time is ${dateString}.`;
+
+  appState.historyManager.addMessage("user", dateMessage);
+  console.log(chalk.green(`\nDate updated in conversation: ${dateString}\n`));
+};
+
+const handleProviderSwitch = async () => {
+  const { default: inquirer } = await import("inquirer");
+  const newProvider = appState.provider === "gemini" ? "openrouter" : "gemini";
+  const envKey = newProvider === "gemini" ? "GEMINI_API_KEY" : "OPENROUTER_API_KEY";
+
+  if (!process.env[envKey]) {
+    displayError(`Cannot switch: ${envKey} is not set in .env`);
+    return false;
+  }
+
+  const { confirm } = await inquirer.prompt([
+    {
+      type: "confirm",
+      name: "confirm",
+      message: `Switch to ${newProvider === "gemini" ? "Gemini" : "OpenRouter"}?`,
+      default: true,
+    },
+  ]);
+
+  if (confirm) {
+    appState.provider = newProvider;
+    appState.aiClient = createAIClient(process.env[envKey], newProvider);
+    appState.configManager.set("apiProvider", newProvider);
+
+    const models = getModelsByProvider(newProvider);
+    const modelKey = newProvider === "gemini" ? "selectedGeminiModel" : "selectedModel";
+    appState.currentModel = appState.configManager.get(modelKey) || getDefaultModel(newProvider);
+
+    if (!models[appState.currentModel]) {
+      appState.currentModel = getDefaultModel(newProvider);
+    }
+
+    appState.configManager.saveConfig();
+    console.log(chalk.green(`\nSwitched to ${newProvider === "gemini" ? "Gemini" : "OpenRouter"}`));
+    displayModelSelected(getModelByKey(appState.currentModel, newProvider).name);
+  }
+
+  return confirm;
 };
 
 const handleUserMessage = async (message) => {
@@ -126,7 +197,8 @@ const handleUserMessage = async (message) => {
     const response = await sendMessage(
       appState.aiClient,
       appState.historyManager.getHistory(),
-      appState.currentModel
+      appState.currentModel,
+      appState.provider
     );
 
     if (response) {
@@ -158,9 +230,9 @@ const cleanupApp = () => {
   }
 };
 
-export const runOneShot = async (apiKey, message) => {
+export const runOneShot = async (apiKey, message, provider = "openrouter") => {
   try {
-    initializeAppState(apiKey);
+    initializeAppState(apiKey, provider);
     await initializeApp(false);
     await handleUserMessage(message);
   } catch (error) {
@@ -171,9 +243,9 @@ export const runOneShot = async (apiKey, message) => {
   }
 };
 
-export const runApp = async (apiKey) => {
+export const runApp = async (apiKey, provider = "openrouter") => {
   try {
-    initializeAppState(apiKey);
+    initializeAppState(apiKey, provider);
     await initializeApp(true);
 
     while (true) {
@@ -186,6 +258,21 @@ export const runApp = async (apiKey) => {
 
       if (isModelCommand(userInput)) {
         await handleModelSwitch();
+        continue;
+      }
+
+      if (isListCommandsCommand(userInput)) {
+        displayCommands();
+        continue;
+      }
+
+      if (isProviderCommand(userInput)) {
+        await handleProviderSwitch();
+        continue;
+      }
+
+      if (isDateUpdateCommand(userInput)) {
+        handleDateUpdate();
         continue;
       }
 

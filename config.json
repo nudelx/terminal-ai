@@ -1,4 +1,6 @@
 {
-  "selectedModel": "mimo-v2-flash",
-  "speak": false
+  "selectedModel": "liquid/lfm-2.5-1.2b-instruct:free",
+  "selectedGeminiModel": "gemini-3-flash",
+  "speak": false,
+  "apiProvider": "gemini"
 }

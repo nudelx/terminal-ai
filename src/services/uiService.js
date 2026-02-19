@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import inquirer from "inquirer";
-import { models, defaultModel, getModelByKey } from "../config/models.js";
-import { MESSAGES, UI, COMMANDS } from "../config/constants.js";
+import { getModelsByProvider, getDefaultModel } from "../config/models.js";
+import { MESSAGES, UI, COMMANDS, COMMAND_DESCRIPTIONS } from "../config/constants.js";
 
 export const displayWelcome = () => {
   console.log(chalk[UI.COLORS.BLUE](MESSAGES.WELCOME));
@@ -32,7 +32,10 @@ export const displayAIResponse = (response) => {
   );
 };
 
-export const selectModel = async () => {
+export const selectModel = async (provider = "openrouter") => {
+  const models = getModelsByProvider(provider);
+  const defaultModel = getDefaultModel(provider);
+
   const modelChoices = Object.entries(models).map(([key, model]) => ({
     name: `${model.name} - ${model.description}`,
     value: key,
@@ -77,6 +80,26 @@ export const isExitCommand = (input) => {
 
 export const isModelCommand = (input) => {
   return input.toLowerCase() === COMMANDS.MODEL;
+};
+
+export const isListCommandsCommand = (input) => {
+  return input.toLowerCase() === COMMANDS.LIST_COMMANDS;
+};
+
+export const isProviderCommand = (input) => {
+  return input.toLowerCase() === COMMANDS.SWITCH_PROVIDER;
+};
+
+export const isDateUpdateCommand = (input) => {
+  return input.toLowerCase() === COMMANDS.DATE_UPDATE;
+};
+
+export const displayCommands = () => {
+  console.log(chalk[UI.COLORS.CYAN]("\nAvailable commands:"));
+  Object.entries(COMMAND_DESCRIPTIONS).forEach(([cmd, desc]) => {
+    console.log(chalk[UI.COLORS.GREEN](`  ${cmd}`) + chalk[UI.COLORS.GRAY](` - ${desc}`));
+  });
+  console.log("");
 };
 
 export const displayError = (message) => {

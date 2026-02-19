@@ -1,6 +1,6 @@
 {
   "selectedModel": "liquid/lfm-2.5-1.2b-instruct:free",
-  "selectedGeminiModel": "gemini-3-flash",
+  "selectedGeminiModel": "gemini-2.5-pro",
   "speak": false,
-  "apiProvider": "gemini"
+  "apiProvider": "openrouter"
 }

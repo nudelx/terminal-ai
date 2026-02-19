@@ -56,6 +56,12 @@ const geminiModels = {
 		description: "High-speed intelligence with PhD-level reasoning at scale.",
 		maxTokens: 8192,
 	},
+	"gemini-2.5-pro": {
+		id: "gemini-2.5-pro",
+		name: "Gemini 2.5 Pro",
+		description: "Google's Gemini 2.5 Pro - most capable",
+		maxTokens: 8192,
+	},
 	"gemini-2.0-flash": {
 		id: "gemini-2.0-flash",
 		name: "Gemini 2.0 Flash",

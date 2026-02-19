@@ -144,7 +144,7 @@ const handleDateUpdate = () => {
 	}
 	const dateString = now.toLocaleString("en-US", options)
 
-	const dateMessage = `Override: The current date and time is ${dateString}.`
+	const dateMessage = `The current date and time is ${dateString}.`
 
 	appState.historyManager.addMessage("user", dateMessage)
 	console.log(chalk.green(`\nDate updated in conversation: ${dateString}\n`))

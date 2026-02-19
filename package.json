@@ -9,6 +9,7 @@
     "start": "node src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon src/index.js",
+    "format": "prettier --write \"src/**/*.js\"",
     "ls": "./node_modules/.bin/ls"
   },
   "keywords": [],
@@ -28,6 +29,7 @@
     "play-sound": "^1.1.6"
   },
   "devDependencies": {
+    "prettier": "^3.8.1",
     "yarn_npm_ls": "^2.0.1"
   }
 }

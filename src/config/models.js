@@ -47,7 +47,7 @@ const openrouterModels = {
 		description: "Liquid's LFM 2.5 1.2B",
 		maxTokens: 8192,
 	},
-};
+}
 
 const geminiModels = {
 	"gemini-3-flash": {
@@ -80,24 +80,24 @@ const geminiModels = {
 		description: "Google's Gemini 1.5 Pro - most capable",
 		maxTokens: 8192,
 	},
-};
+}
 
-const defaultOpenrouterModel = "arcee-ai/trinity-large-preview:free";
-const defaultGeminiModel = "gemini-2.0-flash";
+const defaultOpenrouterModel = "arcee-ai/trinity-large-preview:free"
+const defaultGeminiModel = "gemini-2.0-flash"
 
 const getModelsByProvider = (provider) => {
-	return provider === "gemini" ? geminiModels : openrouterModels;
-};
+	return provider === "gemini" ? geminiModels : openrouterModels
+}
 
 const getDefaultModel = (provider) => {
-	return provider === "gemini" ? defaultGeminiModel : defaultOpenrouterModel;
-};
+	return provider === "gemini" ? defaultGeminiModel : defaultOpenrouterModel
+}
 
 const getModelByKey = (key, provider = "openrouter") => {
-	const models = getModelsByProvider(provider);
-	const defaultModel = getDefaultModel(provider);
-	return models[key] || models[defaultModel];
-};
+	const models = getModelsByProvider(provider)
+	const defaultModel = getDefaultModel(provider)
+	return models[key] || models[defaultModel]
+}
 
 export {
 	openrouterModels,
@@ -107,4 +107,4 @@ export {
 	getModelsByProvider,
 	getDefaultModel,
 	getModelByKey,
-};
+}

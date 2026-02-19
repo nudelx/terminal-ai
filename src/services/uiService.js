@@ -1,115 +1,111 @@
-import chalk from "chalk";
-import inquirer from "inquirer";
-import { getModelsByProvider, getDefaultModel } from "../config/models.js";
-import { MESSAGES, UI, COMMANDS, COMMAND_DESCRIPTIONS } from "../config/constants.js";
+import chalk from "chalk"
+import inquirer from "inquirer"
+import { getModelsByProvider, getDefaultModel } from "../config/models.js"
+import { MESSAGES, UI, COMMANDS, COMMAND_DESCRIPTIONS } from "../config/constants.js"
 
 export const displayWelcome = () => {
-  console.log(chalk[UI.COLORS.BLUE](MESSAGES.WELCOME));
-  console.log(chalk[UI.COLORS.GRAY](MESSAGES.EXIT_INSTRUCTION + "\n"));
-};
+	console.log(chalk[UI.COLORS.BLUE](MESSAGES.WELCOME))
+	console.log(chalk[UI.COLORS.GRAY](MESSAGES.EXIT_INSTRUCTION + "\n"))
+}
 
 export const displayGoodbye = () => {
-  console.log(chalk[UI.COLORS.BLUE](MESSAGES.GOODBYE));
-};
+	console.log(chalk[UI.COLORS.BLUE](MESSAGES.GOODBYE))
+}
 
 export const displayModelSelected = (modelName) => {
-  console.log(chalk[UI.COLORS.GREEN](`Selected model: ${modelName}\n`));
-};
+	console.log(chalk[UI.COLORS.GREEN](`Selected model: ${modelName}\n`))
+}
 
 export const displayModelSwitched = (modelName) => {
-  console.log(chalk[UI.COLORS.GREEN](`\nSwitched to model: ${modelName}\n`));
-};
+	console.log(chalk[UI.COLORS.GREEN](`\nSwitched to model: ${modelName}\n`))
+}
 
 export const displayThinking = () => {
-  console.log(chalk[UI.COLORS.YELLOW]("\n" + MESSAGES.AI_THINKING));
-};
+	console.log(chalk[UI.COLORS.YELLOW]("\n" + MESSAGES.AI_THINKING))
+}
 
 export const displayAIResponse = (response) => {
-  console.log(
-    chalk[UI.COLORS.CYAN]("\n" + MESSAGES.AI_RESPONSE),
-    response,
-    "\n"
-  );
-};
+	console.log(chalk[UI.COLORS.CYAN]("\n" + MESSAGES.AI_RESPONSE), response, "\n")
+}
 
 export const selectModel = async (provider = "openrouter") => {
-  const models = getModelsByProvider(provider);
-  const defaultModel = getDefaultModel(provider);
+	const models = getModelsByProvider(provider)
+	const defaultModel = getDefaultModel(provider)
 
-  const modelChoices = Object.entries(models).map(([key, model]) => ({
-    name: `${model.name} - ${model.description}`,
-    value: key,
-  }));
+	const modelChoices = Object.entries(models).map(([key, model]) => ({
+		name: `${model.name} - ${model.description}`,
+		value: key,
+	}))
 
-  const { selectedModel } = await inquirer.prompt([
-    {
-      type: "list",
-      name: "selectedModel",
-      message: MESSAGES.MODEL_SELECTION,
-      choices: modelChoices,
-      default: defaultModel,
-      pageSize: UI.PAGE_SIZE,
-    },
-  ]);
+	const { selectedModel } = await inquirer.prompt([
+		{
+			type: "list",
+			name: "selectedModel",
+			message: MESSAGES.MODEL_SELECTION,
+			choices: modelChoices,
+			default: defaultModel,
+			pageSize: UI.PAGE_SIZE,
+		},
+	])
 
-  return selectedModel;
-};
+	return selectedModel
+}
 
 export const getUserInput = async () => {
-  const { prompt } = await inquirer.prompt([
-    {
-      type: "input",
-      name: "prompt",
-      message: chalk[UI.COLORS.GREEN](MESSAGES.YOU_PROMPT),
-      prefix: UI.PREFIXES.USER,
-      validate: (input) => {
-        if (!input || input.trim().length === 0) {
-          return "Please enter a message";
-        }
-        return true;
-      },
-    },
-  ]);
+	const { prompt } = await inquirer.prompt([
+		{
+			type: "input",
+			name: "prompt",
+			message: chalk[UI.COLORS.GREEN](MESSAGES.YOU_PROMPT),
+			prefix: UI.PREFIXES.USER,
+			validate: (input) => {
+				if (!input || input.trim().length === 0) {
+					return "Please enter a message"
+				}
+				return true
+			},
+		},
+	])
 
-  return prompt.trim();
-};
+	return prompt.trim()
+}
 
 export const isExitCommand = (input) => {
-  return input.toLowerCase() === COMMANDS.EXIT;
-};
+	return input.toLowerCase() === COMMANDS.EXIT
+}
 
 export const isModelCommand = (input) => {
-  return input.toLowerCase() === COMMANDS.MODEL;
-};
+	return input.toLowerCase() === COMMANDS.MODEL
+}
 
 export const isListCommandsCommand = (input) => {
-  return input.toLowerCase() === COMMANDS.LIST_COMMANDS;
-};
+	return input.toLowerCase() === COMMANDS.LIST_COMMANDS
+}
 
 export const isProviderCommand = (input) => {
-  return input.toLowerCase() === COMMANDS.SWITCH_PROVIDER;
-};
+	return input.toLowerCase() === COMMANDS.SWITCH_PROVIDER
+}
 
 export const isDateUpdateCommand = (input) => {
-  return input.toLowerCase() === COMMANDS.DATE_UPDATE;
-};
+	return input.toLowerCase() === COMMANDS.DATE_UPDATE
+}
 
 export const displayCommands = () => {
-  console.log(chalk[UI.COLORS.CYAN]("\nAvailable commands:"));
-  Object.entries(COMMAND_DESCRIPTIONS).forEach(([cmd, desc]) => {
-    console.log(chalk[UI.COLORS.GREEN](`  ${cmd}`) + chalk[UI.COLORS.GRAY](` - ${desc}`));
-  });
-  console.log("");
-};
+	console.log(chalk[UI.COLORS.CYAN]("\nAvailable commands:"))
+	Object.entries(COMMAND_DESCRIPTIONS).forEach(([cmd, desc]) => {
+		console.log(chalk[UI.COLORS.GREEN](`  ${cmd}`) + chalk[UI.COLORS.GRAY](` - ${desc}`))
+	})
+	console.log("")
+}
 
 export const displayError = (message) => {
-  console.error(chalk[UI.COLORS.RED](message));
-};
+	console.error(chalk[UI.COLORS.RED](message))
+}
 
 export const displayWarning = (message) => {
-  console.warn(chalk[UI.COLORS.YELLOW](message));
-};
+	console.warn(chalk[UI.COLORS.YELLOW](message))
+}
 
 export const displayInfo = (message) => {
-  console.log(chalk[UI.COLORS.CYAN](message));
-};
+	console.log(chalk[UI.COLORS.CYAN](message))
+}

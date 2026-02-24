@@ -1,4 +1,10 @@
 const openrouterModels = {
+	"allenai/olmo-3.1-32b-instruct": {
+		id: "allenai/olmo-3.1-32b-instruct",
+		name: "AllenAI: Olmo 3.1 32B",
+		description: "AllenAI's Olmo 3.1 32B model",
+		maxTokens: 4096,
+	},
 	"mimo-v2-flash": {
 		id: "xiaomi/mimo-v2-flash:free",
 		name: "Mimo V2 Flash",

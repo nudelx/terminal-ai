@@ -1,5 +1,5 @@
 {
-  "selectedModel": "liquid/lfm-2.5-1.2b-instruct:free",
+  "selectedModel": "allenai/olmo-3.1-32b-instruct",
   "selectedGeminiModel": "gemini-2.5-pro",
   "speak": false,
   "apiProvider": "openrouter"

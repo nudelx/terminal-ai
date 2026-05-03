@@ -26,6 +26,7 @@
     "gtts": "^0.2.1",
     "inquirer": "^12.9.6",
     "nodemon": "^3.1.10",
+    "openai": "^6.35.0",
     "play-sound": "^1.1.6"
   },
   "devDependencies": {

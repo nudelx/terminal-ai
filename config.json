@@ -1,6 +1,8 @@
 {
-  "selectedModel": "allenai/olmo-3.1-32b-instruct",
+  "selectedModel": "liquid/lfm-2.5-1.2b-thinking:free",
   "selectedGeminiModel": "gemini-2.5-pro",
   "speak": false,
-  "apiProvider": "openrouter"
+  "apiProvider": "openrouter",
+  "selectedZAiModel": "glm-4.7-flash",
+  "historyEnabled": false
 }

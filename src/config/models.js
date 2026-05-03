@@ -11,10 +11,10 @@ const openrouterModels = {
 		description: "Xiaomi's Mimo V2 Flash model",
 		maxTokens: 4096,
 	},
-	"gemini-2.0-flash": {
-		id: "google/gemini-2.0-flash-exp:free",
-		name: "Gemini 2.0 Flash",
-		description: "Google's Gemini 2.0 Flash experimental",
+	"gemma-4-26b-a4b-it": {
+		id: "google/gemma-4-26b-a4b-it",
+		name: "Gemma 4 26B",
+		description: "Google's Gemma 4 26B",
 		maxTokens: 8192,
 	},
 	"llama-3.3-70b": {
@@ -35,12 +35,6 @@ const openrouterModels = {
 		description: "Arcee AI's Trinity Large Preview",
 		maxTokens: 8192,
 	},
-	"google/gemma-3-27b-it:free": {
-		id: "google/gemma-3-27b-it:free",
-		name: "Gemma 3 27B",
-		description: "Google's Gemma 3 27B",
-		maxTokens: 8192,
-	},
 	"openai/gpt-oss-20b:free": {
 		id: "openai/gpt-oss-20b:free",
 		name: "GPT OSS 20B",
@@ -51,6 +45,18 @@ const openrouterModels = {
 		id: "liquid/lfm-2.5-1.2b-instruct:free",
 		name: "LFM 2.5 1.2B",
 		description: "Liquid's LFM 2.5 1.2B",
+		maxTokens: 8192,
+	},
+	"liquid/lfm-2.5-1.2b-thinking:free": {
+		id: "liquid/lfm-2.5-1.2b-thinking:free",
+		name: "LFM 2.5 1.2B Thinking",
+		description: "Liquid's LFM 2.5 1.2B Thinking",
+		maxTokens: 8192,
+	},
+	"google/gemma-3n-e2b-it:free": {
+		id: "google/gemma-3n-e2b-it:free",
+		name: "Gemma 3n E2B",
+		description: "Google's Gemma 3n E2B Instruct",
 		maxTokens: 8192,
 	},
 }
@@ -94,29 +100,30 @@ const geminiModels = {
 	},
 }
 
+const zAiModels = {
+	"glm-4.7-flash": {
+		id: "glm-4.7-flash",
+		name: "GLM-4.7 Flash",
+		description: "Z.ai's GLM-4.7 Flash — free",
+		maxTokens: 8192,
+	},
+	"glm-4.5": {
+		id: "glm-4.5",
+		name: "GLM-4.5",
+		description: "Z.ai's GLM-4.5",
+		maxTokens: 8192,
+	},
+}
+
 const defaultOpenrouterModel = "arcee-ai/trinity-large-preview:free"
 const defaultGeminiModel = "gemini-2.0-flash"
-
-const getModelsByProvider = (provider) => {
-	return provider === "gemini" ? geminiModels : openrouterModels
-}
-
-const getDefaultModel = (provider) => {
-	return provider === "gemini" ? defaultGeminiModel : defaultOpenrouterModel
-}
-
-const getModelByKey = (key, provider = "openrouter") => {
-	const models = getModelsByProvider(provider)
-	const defaultModel = getDefaultModel(provider)
-	return models[key] || models[defaultModel]
-}
+const defaultZAiModel = "glm-4.7-flash"
 
 export {
 	openrouterModels,
 	geminiModels,
+	zAiModels,
 	defaultOpenrouterModel,
 	defaultGeminiModel,
-	getModelsByProvider,
-	getDefaultModel,
-	getModelByKey,
+	defaultZAiModel,
 }

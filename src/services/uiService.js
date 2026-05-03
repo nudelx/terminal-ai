@@ -1,6 +1,6 @@
 import chalk from "chalk"
 import inquirer from "inquirer"
-import { getModelsByProvider, getDefaultModel } from "../config/models.js"
+import { getModelsByProvider, getDefaultModel } from "../config/providers.js"
 import { MESSAGES, UI, COMMANDS, COMMAND_DESCRIPTIONS } from "../config/constants.js"
 
 export const displayWelcome = () => {
@@ -88,6 +88,14 @@ export const isProviderCommand = (input) => {
 
 export const isDateUpdateCommand = (input) => {
 	return input.toLowerCase() === COMMANDS.DATE_UPDATE
+}
+
+export const isLastCommand = (input) => {
+	return input.toLowerCase() === COMMANDS.LAST
+}
+
+export const isMemoryCommand = (input) => {
+	return input.toLowerCase() === COMMANDS.MEMORY
 }
 
 export const displayCommands = () => {

@@ -1,17 +1,21 @@
 const COMMANDS = {
-	EXIT: "exit",
-	MODEL: "model",
-	LIST_COMMANDS: "ls cmd",
-	SWITCH_PROVIDER: "provider",
-	DATE_UPDATE: "date update",
+	EXIT: "/exit",
+	MODEL: "/model",
+	LIST_COMMANDS: "/ls",
+	SWITCH_PROVIDER: "/provider",
+	DATE_UPDATE: "/date-update",
+	LAST: "/last",
+	MEMORY: "/memory",
 }
 
 const COMMAND_DESCRIPTIONS = {
 	exit: "Exit the application",
 	model: "Switch AI model",
-	"ls cmd": "List all available commands",
-	provider: "Switch API provider (Gemini/OpenRouter)",
+	ls: "List all available commands",
+	provider: "Switch API provider",
 	"date update": "Inject current date/time into conversation",
+	last: "Show the last message in conversation history",
+	memory: "Save current conversation history to file",
 }
 
 const MESSAGES = {

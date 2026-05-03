@@ -1,7 +1,13 @@
 import { fileURLToPath } from "url"
 import { dirname, join } from "path"
 import chalk from "chalk"
-import { getModelsByProvider, getModelByKey, getDefaultModel } from "../config/models.js"
+import PROVIDERS, {
+	getConfigKey,
+	getDefaultModel,
+	getModelByKey,
+	getModelsByProvider,
+	getProviderName,
+} from "../config/providers.js"
 import { MESSAGES } from "../config/constants.js"
 import { createAIClient, sendMessage } from "./aiService.js"
 import { speakText } from "./audioService.js"
@@ -20,6 +26,8 @@ import {
 	isListCommandsCommand,
 	isProviderCommand,
 	isDateUpdateCommand,
+	isLastCommand,
+	isMemoryCommand,
 	displayCommands,
 	displayError,
 } from "./uiService.js"
@@ -45,22 +53,26 @@ const initializeAppState = (apiKey, provider = "openrouter") => {
 	appState.historyPath = join(APP_ROOT, "history.json")
 	appState.configPath = join(APP_ROOT, "config.json")
 	appState.configManager = createConfigManager(appState.configPath)
-	appState.historyManager = createHistoryManager(appState.historyPath)
+	const historyEnabled = appState.configManager.get("historyEnabled", true)
+	appState.historyManager = createHistoryManager(appState.historyPath, {
+		enabled: historyEnabled,
+	})
 	appState.currentModel = null
 }
 
 const initializeApp = async (isInteractive = true) => {
 	try {
 		const models = getModelsByProvider(appState.provider)
-		const modelKey = appState.provider === "gemini" ? "selectedGeminiModel" : "selectedModel"
+		const modelKey = getConfigKey(appState.provider)
 		appState.currentModel = appState.configManager.get(modelKey)
+
+		if (isInteractive) {
+			displayWelcome()
+			console.log(chalk.cyan(`Using ${getProviderName(appState.provider)} API\n`))
+		}
 
 		if (!appState.currentModel || !models[appState.currentModel]) {
 			if (isInteractive) {
-				displayWelcome()
-				console.log(
-					chalk.cyan(`Using ${appState.provider === "gemini" ? "Gemini" : "OpenRouter"} API\n`),
-				)
 				appState.currentModel = await selectModel(appState.provider)
 
 				if (appState.currentModel && models[appState.currentModel]) {
@@ -70,14 +82,11 @@ const initializeApp = async (isInteractive = true) => {
 					throw new Error(MESSAGES.ERROR_NO_MODEL)
 				}
 			} else {
-				// Use default model for non-interactive mode
 				appState.currentModel = getDefaultModel(appState.provider)
 			}
 		}
 
 		displayModelSelected(getModelByKey(appState.currentModel, appState.provider).name)
-
-		appState.historyManager.startAutoSave()
 
 		setupProcessHandlers()
 	} catch (error) {
@@ -117,7 +126,7 @@ const handleModelSwitch = async () => {
 
 		if (newModel && models[newModel]) {
 			appState.currentModel = newModel
-			const modelKey = appState.provider === "gemini" ? "selectedGeminiModel" : "selectedModel"
+			const modelKey = getConfigKey(appState.provider)
 			appState.configManager.set(modelKey, newModel)
 			appState.configManager.saveConfig()
 			displayModelSwitched(getModelByKey(newModel, appState.provider).name)
@@ -129,6 +138,29 @@ const handleModelSwitch = async () => {
 		displayError(`${MESSAGES.ERROR_MODEL_SWITCH}: ${error.message}`)
 		return false
 	}
+}
+
+const handleMemory = () => {
+	const ok = appState.historyManager.saveHistory()
+	if (ok) {
+		const count = appState.historyManager.getHistory().length
+		console.log(chalk.green(`\nSaved ${count} message(s) to history file.\n`))
+	} else {
+		displayError("Failed to save history.")
+	}
+}
+
+const handleLast = () => {
+	const history = appState.historyManager.getHistory()
+
+	if (history.length === 0) {
+		console.log(chalk.yellow("\nHistory is empty.\n"))
+		return
+	}
+
+	const last = history[history.length - 1]
+	const label = last.role === "assistant" ? "AI" : last.role === "user" ? "You" : last.role
+	console.log(chalk.cyan(`\nLast (${label}):`), last.content, "\n")
 }
 
 const handleDateUpdate = () => {
@@ -152,42 +184,53 @@ const handleDateUpdate = () => {
 
 const handleProviderSwitch = async () => {
 	const { default: inquirer } = await import("inquirer")
-	const newProvider = appState.provider === "gemini" ? "openrouter" : "gemini"
-	const envKey = newProvider === "gemini" ? "GEMINI_API_KEY" : "OPENROUTER_API_KEY"
 
-	if (!process.env[envKey]) {
-		displayError(`Cannot switch: ${envKey} is not set in .env`)
-		return false
-	}
+	const choices = Object.values(PROVIDERS).map((p) => {
+		const hasKey = Boolean(process.env[p.keyName])
+		const wired = Boolean(p.models)
+		const isCurrent = p.id === appState.provider
 
-	const { confirm } = await inquirer.prompt([
+		let disabled = false
+		if (!hasKey) disabled = `${p.keyName} not set`
+		else if (!wired) disabled = "not yet implemented"
+
+		return {
+			name: isCurrent ? `${p.name} (current)` : p.name,
+			value: p.id,
+			disabled,
+		}
+	})
+
+	const { newProviderId } = await inquirer.prompt([
 		{
-			type: "confirm",
-			name: "confirm",
-			message: `Switch to ${newProvider === "gemini" ? "Gemini" : "OpenRouter"}?`,
-			default: true,
+			type: "list",
+			name: "newProviderId",
+			message: "Select API provider:",
+			choices: [...choices, new inquirer.Separator(), { name: "Cancel", value: null }],
 		},
 	])
 
-	if (confirm) {
-		appState.provider = newProvider
-		appState.aiClient = createAIClient(process.env[envKey], newProvider)
-		appState.configManager.set("apiProvider", newProvider)
+	if (!newProviderId || newProviderId === appState.provider) return false
 
-		const models = getModelsByProvider(newProvider)
-		const modelKey = newProvider === "gemini" ? "selectedGeminiModel" : "selectedModel"
-		appState.currentModel = appState.configManager.get(modelKey) || getDefaultModel(newProvider)
+	const newProvider = Object.values(PROVIDERS).find((p) => p.id === newProviderId)
 
-		if (!models[appState.currentModel]) {
-			appState.currentModel = getDefaultModel(newProvider)
-		}
+	appState.provider = newProvider.id
+	appState.aiClient = createAIClient(process.env[newProvider.keyName], newProvider.id)
+	appState.configManager.set("apiProvider", newProvider.id)
 
-		appState.configManager.saveConfig()
-		console.log(chalk.green(`\nSwitched to ${newProvider === "gemini" ? "Gemini" : "OpenRouter"}`))
-		displayModelSelected(getModelByKey(appState.currentModel, newProvider).name)
+	const models = getModelsByProvider(newProvider.id)
+	const modelKey = getConfigKey(newProvider.id)
+	appState.currentModel = appState.configManager.get(modelKey) || getDefaultModel(newProvider.id)
+
+	if (!models[appState.currentModel]) {
+		appState.currentModel = getDefaultModel(newProvider.id)
 	}
 
-	return confirm
+	appState.configManager.saveConfig()
+	console.log(chalk.green(`\nSwitched to ${newProvider.name}`))
+	displayModelSelected(getModelByKey(appState.currentModel, newProvider.id).name)
+
+	return true
 }
 
 const handleUserMessage = async (message) => {
@@ -224,7 +267,6 @@ const handleUserMessage = async (message) => {
 const cleanupApp = () => {
 	try {
 		if (appState.historyManager) {
-			appState.historyManager.stopAutoSave()
 			appState.historyManager.saveHistory()
 		}
 	} catch (error) {
@@ -275,6 +317,16 @@ export const runApp = async (apiKey, provider = "openrouter") => {
 
 			if (isDateUpdateCommand(userInput)) {
 				handleDateUpdate()
+				continue
+			}
+
+			if (isLastCommand(userInput)) {
+				handleLast()
+				continue
+			}
+
+			if (isMemoryCommand(userInput)) {
+				handleMemory()
 				continue
 			}
 

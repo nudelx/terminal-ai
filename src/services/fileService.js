@@ -34,7 +34,6 @@ export const safeWriteJSON = (filePath, data) => {
 
 export const createConfigManager = (configPath) => {
 	let config = safeReadJSON(configPath, { selectedModel: null })
-	let autoSaveInterval = null
 
 	return {
 		get: (key, defaultValue = null) => config[key] ?? defaultValue,
@@ -55,9 +54,8 @@ export const createConfigManager = (configPath) => {
 	}
 }
 
-export const createHistoryManager = (historyPath) => {
-	let history = safeReadJSON(historyPath, [])
-	let autoSaveInterval = null
+export const createHistoryManager = (historyPath, { enabled = true } = {}) => {
+	let history = enabled ? safeReadJSON(historyPath, []) : []
 
 	return {
 		getHistory: () => history,
@@ -72,23 +70,6 @@ export const createHistoryManager = (historyPath) => {
 
 		clearHistory: () => {
 			history = []
-		},
-
-		startAutoSave: (intervalMs = 5000) => {
-			if (autoSaveInterval) {
-				clearInterval(autoSaveInterval)
-			}
-
-			autoSaveInterval = setInterval(() => {
-				safeWriteJSON(historyPath, history)
-			}, intervalMs)
-		},
-
-		stopAutoSave: () => {
-			if (autoSaveInterval) {
-				clearInterval(autoSaveInterval)
-				autoSaveInterval = null
-			}
 		},
 	}
 }

@@ -4,6 +4,8 @@ import inquirer from "inquirer"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { MESSAGES } from "./config/constants.js"
+import PROVIDERS, { getProviderById } from "./config/providers.js"
+import { isProviderImplemented } from "./services/aiService.js"
 import { runApp, runOneShot } from "./services/appService.js"
 import { safeReadJSON, safeWriteJSON } from "./services/fileService.js"
 
@@ -11,59 +13,49 @@ const __dirname = dirname(fileURLToPath(import.meta.url))
 const configPath = join(__dirname, "..", "config.json")
 dotenv.config({ path: join(__dirname, "..", ".env") })
 
-const validateEnvironment = async () => {
-	const openrouterKey = process.env.OPENROUTER_API_KEY
-	const geminiKey = process.env.GEMINI_API_KEY
+const isProviderUsable = (p) =>
+	Boolean(p.models) && isProviderImplemented(p.id) && Boolean(process.env[p.keyName])
 
-	// Load saved provider preference
+const validateEnvironment = async () => {
 	const config = safeReadJSON(configPath, {})
 	const savedProvider = config.apiProvider
 
-	// If we have a saved provider and the corresponding key exists, use it
-	if (savedProvider === "gemini" && geminiKey) {
-		return { apiKey: geminiKey, provider: "gemini" }
-	}
-	if (savedProvider === "openrouter" && openrouterKey) {
-		return { apiKey: openrouterKey, provider: "openrouter" }
-	}
+	const usable = Object.values(PROVIDERS).filter(isProviderUsable)
 
-	// If both keys are available, let user choose
-	if (openrouterKey && geminiKey) {
-		const { provider } = await inquirer.prompt([
-			{
-				type: "list",
-				name: "provider",
-				message: "Multiple API keys detected. Which provider would you like to use?",
-				choices: [
-					{ name: "Gemini (Google AI)", value: "gemini" },
-					{ name: "OpenRouter", value: "openrouter" },
-				],
-			},
-		])
-
-		// Save the choice
-		safeWriteJSON(configPath, { ...config, apiProvider: provider })
-
-		return {
-			apiKey: provider === "gemini" ? geminiKey : openrouterKey,
-			provider,
-		}
+	if (usable.length === 0) {
+		console.error(chalk.red(MESSAGES.ERROR_API_KEY))
+		const keys = Object.values(PROVIDERS)
+			.map((p) => p.keyName)
+			.join(" or ")
+		console.error(chalk.yellow(`Set ${keys} in your .env file`))
+		process.exit(1)
 	}
 
-	// Use whichever key is available
-	if (geminiKey) {
-		safeWriteJSON(configPath, { ...config, apiProvider: "gemini" })
-		return { apiKey: geminiKey, provider: "gemini" }
+	// Honor saved preference if still usable
+	const savedMatch = savedProvider && usable.find((p) => p.id === savedProvider)
+	if (savedMatch) {
+		return { apiKey: process.env[savedMatch.keyName], provider: savedMatch.id }
 	}
 
-	if (openrouterKey) {
-		safeWriteJSON(configPath, { ...config, apiProvider: "openrouter" })
-		return { apiKey: openrouterKey, provider: "openrouter" }
+	// Single usable provider — use it
+	if (usable.length === 1) {
+		const [only] = usable
+		safeWriteJSON(configPath, { ...config, apiProvider: only.id })
+		return { apiKey: process.env[only.keyName], provider: only.id }
 	}
 
-	console.error(chalk.red(MESSAGES.ERROR_API_KEY))
-	console.error(chalk.yellow("Set either OPENROUTER_API_KEY or GEMINI_API_KEY in your .env file"))
-	process.exit(1)
+	// Multiple — let user choose
+	const { provider } = await inquirer.prompt([
+		{
+			type: "list",
+			name: "provider",
+			message: "Multiple API keys detected. Which provider would you like to use?",
+			choices: usable.map((p) => ({ name: p.name, value: p.id })),
+		},
+	])
+
+	safeWriteJSON(configPath, { ...config, apiProvider: provider })
+	return { apiKey: process.env[getProviderById(provider).keyName], provider }
 }
 
 const main = async () => {
